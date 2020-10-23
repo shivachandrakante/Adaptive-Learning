@@ -12,8 +12,7 @@ class Teacher:
         Teacher.cursor.execute(format_str)
         connection.commit()
         format_str="""CREATE TABLE IF NOT EXISTS quiz 
-                            (   Quiz_No INTEGER PRIMARY KEY AUTOINCREMENT,
-                                Course_ID INTEGER,
+                            (   Course_ID INTEGER,
                                 status CHAR(1) NOT NULL,
                                 FOREIGN KEY (Course_Id) REFERENCES course(Course_ID) ON UPDATE CASCADE
                                 ON DELETE CASCADE
@@ -38,8 +37,9 @@ class Teacher:
         while(self.__check):
             print("If You want add Another question Press Y else N")
             self.__temp_check=str(input())
-            if self.__temp_check=='N':
+            if self.__temp_check.lower()=='n' or self.__temp_check.lower()=='no':
                 self.__check=False
+                return
             else:
                 print("Enter the Question and Four options and correct answers")
                 print("--Please add correct options Numbers seperated by comma if there are Multiple Correct Answers--")
@@ -67,7 +67,9 @@ class Teacher:
                 connection.commit()
                 
     def add_quiz(self):
+        print("----------Course Table----------")
         self.show_table("course")
+        print("---------- Quiz Table ----------")
         self.show_table("quiz")
         print("Enter the Course ID for which you want to add quiz: ")
         self.__temp=int(input())
@@ -76,7 +78,7 @@ class Teacher:
         Teacher.cursor.execute(self.sql_command)
         connection.commit()
         self.helper(self.__temp)
-        
+
     def delete_quiz(self,table_name=None):
         if(table_name==None):
             print("Select the Quiz table you want to delete")
@@ -85,6 +87,10 @@ class Teacher:
         format_str="""DROP TABLE "{tb_name}";"""
         self.sql_command = format_str.format(tb_name=table_name)
         Teacher.cursor.execute(self.sql_command)
+        format_str="""UPDATE quiz SET status = "N" WHERE course_id = {tb_name};"""
+        self.sql_command = format_str.format(tb_name=self.__temp)
+        Teacher.cursor.execute(self.sql_command)
+        connection.commit()
         
     def show_table(self,table_name=None):
         if(table_name==None):
@@ -109,6 +115,10 @@ class Teacher:
         self.sql_command = format_str.format(course_id=self.__course_id, course_name=self.__course_name)
         Teacher.cursor.execute(self.sql_command)
         connection.commit()
+        format_str = """INSERT INTO quiz (Course_ID, status) VALUES ("{course_id}", "N");"""
+        self.sql_command = format_str.format(course_id=self.__course_id)
+        Teacher.cursor.execute(self.sql_command)
+        connection.commit()
 
     def delete_course(self):
         format_str="""SELECT * FROM COURSE;"""
@@ -122,6 +132,10 @@ class Teacher:
             self.sql_command = format_str.format(course_id=self.__temp_id)
             Teacher.cursor.execute(self.sql_command)
             connection.commit()
+            format_str = """DELETE from quiz where Course_id={course_id};"""
+            self.sql_command = format_str.format(course_id=self.__temp_id)
+            Teacher.cursor.execute(self.sql_command)
+            connection.commit()
 
         elif self.__temp1=='Name' or self.__temp1=='name' or self.__temp1=='NAME':
             print('Enter the Course Id you want to delete: ')
@@ -130,6 +144,11 @@ class Teacher:
             self.sql_command = format_str.format(course_name=self.__temp_cname)
             Teacher.cursor.execute(self.sql_command)
             connection.commit()
+            format_str = """DELETE from quiz where Course_id={course_id};"""
+            self.sql_command = format_str.format(course_id=self.__temp_id)
+            Teacher.cursor.execute(self.sql_command)
+            connection.commit()
+
 
         else:
             print("------------Wrong Entry------------")
@@ -149,6 +168,10 @@ class Teacher:
             self.sql_command=format_str.format(new_id=self.__new_temp_id,old_id=self.__temp_id)
             Teacher.cursor.execute(self.sql_command)
             connection.commit()
+            format_str="""UPDATE quiz SET course_id = {new_id} WHERE course_id = {old_id};"""
+            self.sql_command=format_str.format(new_id=self.__new_temp_id,old_id=self.__temp_id)
+            Teacher.cursor.execute(self.sql_command)
+            connection.commit()
 
         elif self.__temp1=='Name' or self.__temp1=='name' or self.__temp1=='NAME':
             print('Enter the Course Id you want to edit: ')
@@ -156,6 +179,10 @@ class Teacher:
             print('Enter the Course Id you which you want to edit: ')
             self.__new_temp_cname=str(input())
             format_str="""UPDATE course SET course_name = "{new_name}" WHERE course_name = "{old_name}";"""
+            self.sql_command=format_str.format(new_name=self.__new_temp_cname,old_name=self.__temp_cname)
+            Teacher.cursor.execute(self.sql_command)
+            connection.commit()
+            format_str="""UPDATE quiz SET course_name = "{new_name}" WHERE course_name = "{old_name}";"""
             self.sql_command=format_str.format(new_name=self.__new_temp_cname,old_name=self.__temp_cname)
             Teacher.cursor.execute(self.sql_command)
             connection.commit()
